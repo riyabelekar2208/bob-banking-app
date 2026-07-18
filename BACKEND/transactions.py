@@ -66,15 +66,18 @@ def withdraw():
     if request.method == "POST":
         raw = request.form.get("amount", "").strip()
 
-        # --- numeric validation ---
+        if not raw:
+            error = "Amount is required"
+            return render_template("withdraw.html", error=error)
+
         try:
             amount = float(raw)
         except ValueError:
-            error = "Please enter a valid numeric amount."
+            error = "Amount must be greater than zero"
             return render_template("withdraw.html", error=error)
 
         if amount <= 0:
-            error = "Withdrawal amount must be greater than zero."
+            error = "Amount must be greater than zero"
             return render_template("withdraw.html", error=error)
 
         # --- funds check ---
@@ -82,7 +85,7 @@ def withdraw():
         account = get_account_by_customer_id(customer_id)
 
         if amount > account["balance"]:
-            error = "Insufficient funds."
+            error = "Insufficient funds"
             return render_template("withdraw.html", error=error)
 
         new_balance = round(account["balance"] - amount, 2)
