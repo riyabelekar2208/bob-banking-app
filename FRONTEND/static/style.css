@@ -1,0 +1,39 @@
+/* style.css — Custom overrides on top of Bootstrap 5 */
+
+/* Smooth page feel */
+body {
+  min-height: 100vh;
+}
+
+/* Navbar brand sizing */
+.navbar-brand {
+  font-size: 1.25rem;
+  letter-spacing: 0.02em;
+}
+
+/* Card hover lift on action cards */
+.card {
+  border-radius: 0.6rem;
+  transition: box-shadow 0.2s ease;
+}
+
+/* Balance display */
+.display-5 {
+  letter-spacing: -0.02em;
+}
+
+/* Input group styling */
+.input-group-text {
+  background-color: #f8f9fa;
+  color: #495057;
+}
+
+/* Alert close button alignment */
+.alert {
+  border-radius: 0.5rem;
+}
+
+/* Small helper: uppercase tracking for labels */
+.tracking-wide {
+  letter-spacing: 0.08em;
+}
