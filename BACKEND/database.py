@@ -6,6 +6,7 @@ No other module writes SQL directly; they call the functions defined here.
 
 import sqlite3
 import os
+from decimal import Decimal
 from werkzeug.security import generate_password_hash
 
 # Path to the SQLite file, stored alongside this module inside BACKEND/
@@ -115,3 +116,45 @@ def log_transaction(account_id: int, transaction_type: str, amount: float):
     )
     conn.commit()
     conn.close()
+
+
+def withdraw_atomic(account_id: int, amount: Decimal) -> bool:
+    """
+    Atomically deduct *amount* from the account balance.
+
+    Uses BEGIN EXCLUSIVE to acquire a write-lock before reading the balance,
+    eliminating the TOCTOU race condition where two concurrent requests could
+    both pass the balance check and overdraft the account.
+
+    Returns True on success, False if the account has insufficient funds.
+    Raises on any unexpected database error (caller should not catch broadly).
+    """
+    conn = _get_connection()
+    try:
+        conn.execute("BEGIN EXCLUSIVE")
+        cur = conn.cursor()
+        cur.execute("SELECT balance FROM accounts WHERE id = ?", (account_id,))
+        row = cur.fetchone()
+        if row is None:
+            conn.execute("ROLLBACK")
+            return False
+        current_balance = Decimal(str(row["balance"]))
+        if amount > current_balance:
+            conn.execute("ROLLBACK")
+            return False
+        new_balance = float(round(current_balance - amount, 2))
+        cur.execute(
+            "UPDATE accounts SET balance = ? WHERE id = ?",
+            (new_balance, account_id),
+        )
+        cur.execute(
+            "INSERT INTO transactions (account_id, type, amount) VALUES (?, ?, ?)",
+            (account_id, "withdrawal", float(amount)),
+        )
+        conn.execute("COMMIT")
+        return True
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+    finally:
+        conn.close()
