@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Withdraw Funds — BankingApp{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+  <div class="col-12 col-sm-10 col-md-6 col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+
+        <h3 class="card-title mb-4">Withdraw Funds</h3>
+
+        {% if error %}
+        <div class="alert alert-danger" role="alert">
+          {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('transactions.withdraw') }}" novalidate>
+
+          <div class="mb-3">
+            <label for="amount" class="form-label">Amount (£)</label>
+            <div class="input-group">
+              <span class="input-group-text">£</span>
+              <input
+                type="number"
+                class="form-control"
+                id="amount"
+                name="amount"
+                placeholder="0.00"
+                min="0.01"
+                step="0.01"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-danger btn-lg">Withdraw</button>
+          </div>
+
+        </form>
+
+        <div class="mt-3 text-center">
+          <a href="{{ url_for('accounts.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            ← Back to Dashboard
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
